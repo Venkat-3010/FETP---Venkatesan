@@ -1,6 +1,8 @@
 import json
 import os
 import sqlite3
+import pytz
+from datetime import datetime
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
@@ -60,6 +62,9 @@ def index():
 
     else:
         return '<a class="button" href="/login">Google Login</a>'
+
+tz = pytz.timezone('Asia/Kolkata')  # Setting timezone for India
+    current_time = datetime.now(tz).strftime('%Y-%m-%d %H:%M:%S')
 
 @app.route('/login')
 def login():
