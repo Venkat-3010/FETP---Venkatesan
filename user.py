@@ -1,3 +1,5 @@
+import pytz
+from datetime import datetime
 from flask_login import UserMixin
 
 from db import get_db
@@ -33,3 +35,8 @@ class User(UserMixin):
             (id_, name, email, profile_pic),
         )
         db.commit()
+
+    tz = pytz.timezone('Asia/Kolkata')  # Setting timezone for India
+    current_time = datetime.now(tz).strftime('%Y-%m-%d %H:%M:%S')
+
+    
