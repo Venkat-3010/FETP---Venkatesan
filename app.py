@@ -1,10 +1,13 @@
 import json
 import os
 import sqlite3
+#import pathlib
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-from flask import Flask,redirect,request,url_for
+from flask import Flask,redirect,request,url_for,session
+#from google.auth.transport.requests import Request
+from google_auth_oauthlib.flow import Flow
 from flask_login import(
     LoginManager,
     current_user,
@@ -19,15 +22,17 @@ import requests
 from db import init_db_command
 from user import User
 
-GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', None)
-GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', None)
+app = Flask(__name__)
+app.secret_key = "your_secret_key" or os.urandom(24)
+
+# Google OAuth 2.0 configuration
+GOOGLE_CLIENT_ID = "1077328913313-4eve4i31ebetnijksh6u53jfm9g20fti.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET = "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"
+SCOPES = ["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"]
 
 GOOGLE_DISCOVERY_URL = (
     "https://accounts.google.com/.well-known/openid-configuration"
 )
-
-app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY') or os.urandom(24)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -51,37 +56,36 @@ def load_user(user_id):
 def index():
     if current_user.is_authenticated:
         return (
-    '<div><img src="{}" alt="Google profile picture"></img>'
-    '<p>Profile Picture</p></div>'
-    '<p>Hello {}</p><a class="button" href="/logout">Logout</a>'
-    '<p>You are signed in with the email {}</p>'
-    ).format(current_user.profile_picture, current_user.name, current_user.email)
+            '<div><img src="{}" alt="Google profile picture"></img>'
+            '<p>Profile Picture</p></div>'
+            '<p>Hello {}</p><a class="button" href="/logout">Logout</a>'
+            '<p>You are signed in with the email {}</p>'
+                ).format(current_user.profile_pic, current_user.name, current_user.email)
 
 
     else:
-        return '<a class="button" href="/login">Google Login</a>'
+        return '<a class="button" href="/login"><center>Google Login</center></a>'
 
 @app.route('/login')
 def login():
-    google_provider_cfg = get_google_provider_cfg()
-    authorization_endpoint = google_provider_cfg['authorization_endpoint']
-
-    request_uri = client.prepare_request_uri(
-        authorization_endpoint,
-        redirect_uri=request.base_url + "/callback",
-        scope = ['openid''email','profile']
+    flow = Flow.from_client_secrets_file(
+    "client_secret.json",
+    scopes=SCOPES,
+    redirect_uri=request.base_url + "/callback"
     )
-    return redirect(request_uri)
+    authorization_url, state = flow.authorization_url(access_type='offline', include_granted_scopes='true')
+    session['state'] = state
+    return redirect(authorization_url)
 
 @app.route('/login/callback')
 def callback():
-    code = request.args.get('code')
+    code = request.args.get("code")
 
     google_provider_cfg = get_google_provider_cfg()
 
-    token_endpoint = google_provider_cfg['token_endpoint']
+    token_endpoint = google_provider_cfg["token_endpoint"]
 
-    token_url,headers,body = client.prepare_token_request(
+    token_url, headers, body = client.prepare_token_request(
         token_endpoint,
         authorization_response=request.url,
         redirect_url=request.base_url,
@@ -92,7 +96,7 @@ def callback():
         token_url,
         headers=headers,
         data=body,
-        auth=(GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET)
+        auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET)
     )
 
     client.parse_request_body_response(json.dumps(token_response.json()))
@@ -113,7 +117,7 @@ def callback():
         return "User email not available or not verified", 400
     
     user = User(
-        id = unique_id,name=users_name,email=users_email,profile_picture=picture
+        id_ = unique_id,name=users_name,email=users_email,profile_pic=picture
     )
 
     if not User.get(unique_id):
