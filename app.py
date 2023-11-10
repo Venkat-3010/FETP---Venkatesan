@@ -27,8 +27,8 @@ app = Flask(__name__)
 app.secret_key = "your_secret_key" or os.urandom(24)
 
 # Google OAuth 2.0 configuration
-GOOGLE_CLIENT_ID = "GOOGLE_CLIENT_ID"
-GOOGLE_CLIENT_SECRET = "GOOGLE_CLIENT_SECRET"
+GOOGLE_CLIENT_ID = "1077328913313-4eve4i31ebetnijksh6u53jfm9g20fti.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET = "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"
 SCOPES = ["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"]
 
 GOOGLE_DISCOVERY_URL = (
@@ -140,19 +140,21 @@ def generate_diamond(num_lines):
     text = "formulqsolutions"
     text_length = len(text)
 
-    for i in range(1, num_lines ):
-        line = ' ' * (num_lines - i)
+    for i in range(1, num_lines // 2 + 1):
+        line = ' ' * (num_lines // 2 - i)
         for j in range(2 * i - 1):
             line += text[j % text_length]
         lines.append(line)
 
-    for i in range(num_lines , 0, -1):
-        line = ' ' * (num_lines - i)
+    for i in range(num_lines // 2 + 1, 0, -1): 
+        line = ' ' * (num_lines // 2 - i)
         for j in range(2 * i - 1):
             line += text[j % text_length]
         lines.append(line)
 
     return lines
+
+
 
 def get_google_provider_cfg():
     return requests.get(GOOGLE_DISCOVERY_URL).json()
