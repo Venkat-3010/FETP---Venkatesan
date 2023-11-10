@@ -5,7 +5,8 @@ import sqlite3
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-from flask import Flask,redirect,request,url_for,session
+from flask import Flask,redirect,request,url_for,session,render_template
+from datetime import datetime
 #from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import Flow
 from flask_login import(
@@ -55,16 +56,10 @@ def load_user(user_id):
 @app.route('/')
 def index():
     if current_user.is_authenticated:
-        return (
-            '<div><img src="{}" alt="Google profile picture"></img>'
-            '<p>Profile Picture</p></div>'
-            '<p>Hello {}</p><a class="button" href="/logout">Logout</a>'
-            '<p>You are signed in with the email {}</p>'
-                ).format(current_user.profile_pic, current_user.name, current_user.email)
-
-
+         current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+         return render_template('index.html', user_info=current_user, current_time=current_time)
     else:
-        return '<a class="button" href="/login"><center>Google Login</center></a>'
+         return '<center><a class="button" align="center" href="/login">Google Login</a></center>'
 
 @app.route('/login')
 def login():
@@ -133,6 +128,31 @@ def logout():
     logout_user()
     return redirect(url_for("index"))
 
+@app.route('/display_diamond', methods=['POST'])
+@login_required
+def display_diamond():
+    num_lines = int(request.form['num_lines'])
+    diamond_lines = generate_diamond(num_lines)
+    return render_template('index.html', user_info=current_user, current_time=datetime.now().strftime('%Y-%m-%d %H:%M:%S'), diamond_lines=diamond_lines)
+
+def generate_diamond(num_lines):
+    lines = []
+    text = "formulqsolutions"
+    text_length = len(text)
+
+    for i in range(1, num_lines ):
+        line = ' ' * (num_lines - i)
+        for j in range(2 * i - 1):
+            line += text[j % text_length]
+        lines.append(line)
+
+    for i in range(num_lines , 0, -1):
+        line = ' ' * (num_lines - i)
+        for j in range(2 * i - 1):
+            line += text[j % text_length]
+        lines.append(line)
+
+    return lines
 
 def get_google_provider_cfg():
     return requests.get(GOOGLE_DISCOVERY_URL).json()

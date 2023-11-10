@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Google authentication app</title>
+    <!-- Add any additional styles or scripts here -->
+</head>
+<body>
+
+{% if user_info %}
+    <center><h2>
+        <div>
+            <img src="{{ user_info.profile_pic }}" alt="Google profile picture" style = "width:200px;height:200px">
+            <p>Profile Picture</p>
+        </div>
+        <p>Hello {{ user_info.name }}</p>
+        <a class="button" href="/logout">Logout</a>
+        <p>You are signed in with the email {{ user_info.email }}</p>
+        <p>Current Time: {{ current_time }}</p>
+
+        <form action="{{ url_for('display_diamond') }}" method="post">
+            <label for="num_lines">Enter he umber of lines for the design:</label>
+            <input type="number" id="num_lines" name="num_lines" max="100" required>
+            <input type="submit" value="Display"> </center>
+        </form>
+    
+        {% if diamond_lines %}
+            <p>Output Diamond Design:</p>
+            <pre>
+                {% for line in diamond_lines %}
+                    {{ line }}
+                {% endfor %}
+            </pre>
+        {% endif %}</h2>
+    {% else %}
+        <center><a class="button" align="center" href="/login">Google Login</a></center>
+    {% endif %}
+   
+
+</body>
+</html>
