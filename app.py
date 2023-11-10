@@ -27,8 +27,8 @@ app = Flask(__name__)
 app.secret_key = "your_secret_key" or os.urandom(24)
 
 # Google OAuth 2.0 configuration
-GOOGLE_CLIENT_ID = "1077328913313-4eve4i31ebetnijksh6u53jfm9g20fti.apps.googleusercontent.com"
-GOOGLE_CLIENT_SECRET = "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"
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID",None)
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRE",None)
 SCOPES = ["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"]
 
 GOOGLE_DISCOVERY_URL = (
